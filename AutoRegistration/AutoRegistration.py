@@ -3,144 +3,133 @@ import csv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.service import Service  # Импортируем Service
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 import random
 
-# Укажи путь к драйверу браузера
+# Specify the path to the Chrome WebDriver
 driver_path = "C:/Users/user/Downloads/chromedriver-win64/chromedriver.exe"
 service = Service(driver_path)
 
-# Функция для чтения CSV-файла с кодировкой utf-8-sig
+# Function to read CSV file with utf-8-sig encoding
 def read_csv(file_path):
-    with open(file_path, newline='', encoding='utf-8-sig') as csvfile:  # Используем utf-8-sig
-        reader = csv.DictReader(csvfile, delimiter=';')  # Указываем разделитель ';'
+    with open(file_path, newline='', encoding='utf-8-sig') as csvfile:
+        reader = csv.DictReader(csvfile, delimiter=';')
         data = [row for row in reader]
     return data
 
-# Загружаем данные из CSV
-data = read_csv("C:\\Users\\user\\Downloads\\chromedriver-win64\\tadj1.csv")  # Укажи путь к файлу с данными
+# Load data from CSV
+data = read_csv("C:\\Users\\user\\Downloads\\chromedriver-win64\\tadj1.csv")
 
-# Инициализируем драйвер с использованием Service
+# Initialize WebDriver
 driver = webdriver.Chrome(service=service)
 driver.get("https://job.cznmos.ru/anketa/irs-construction/")
 
-# Ждем загрузки страницы
+# Wait for the page to load
 time.sleep(3)
 
-# Цикл для обработки каждого человека из данных
+# Loop through each person in the dataset
 for person in data:
-    # Заполнение полей
-    driver.find_element(By.NAME, "canlastname").send_keys(person['last_name'])  # Фамилия
-    driver.find_element(By.NAME, "canfirstname").send_keys(person['first_name'])  # Имя
-    driver.find_element(By.NAME, "cansurname").send_keys(person['surname'])  # Отчество
+    # Fill in personal information fields
+    driver.find_element(By.NAME, "canlastname").send_keys(person['last_name'])  # Last name
+    driver.find_element(By.NAME, "canfirstname").send_keys(person['first_name'])  # First name
+    driver.find_element(By.NAME, "cansurname").send_keys(person['surname'])  # Middle name
 
-    # Заполнение поля "Дата рождения"
+    # Fill in the "Date of Birth" field
     dob_field = driver.find_element(By.CSS_SELECTOR, '.react-datepicker__input-container input')
-    # Кликаем на поле, чтобы оно получило фокус
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable(dob_field))
-    driver.execute_script("arguments[0].scrollIntoView(true);", dob_field)  # Прокручиваем страницу
+    driver.execute_script("arguments[0].scrollIntoView(true);", dob_field)
     dob_field.click()
-
-    # Даем немного времени, чтобы каретка установилась в нужное место
-    time.sleep(1)  # Задержка 1 секунда
+    time.sleep(1)  # Small delay
     dob_field.send_keys(person['dob'])
     dob_field.send_keys(Keys.TAB)
-
-    # Ожидаем, что календарь закроется (или скрываем его через JavaScript)
-    time.sleep(1)  # Дополнительная задержка
+    time.sleep(1)  # Additional delay
     driver.execute_script('document.querySelector(".react-datepicker").style.display = "none";')
 
-    # Заполнение поля "Пол"
+    # Fill in the "Gender" field
     gender_input = driver.find_element(By.ID, "react-select-2-input")
     gender_input.send_keys(person['gender'])
     gender_input.send_keys(Keys.ENTER)
 
-    # Заполнение поля "Мобильный телефон"
+    # Fill in the "Mobile Phone" field
     tel_field = driver.find_element(By.NAME, "ccmobtel")
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable(tel_field))
-    driver.execute_script("arguments[0].scrollIntoView(true);", tel_field)  # Прокручиваем страницу
+    driver.execute_script("arguments[0].scrollIntoView(true);", tel_field)
     actions = ActionChains(driver)
     actions.move_to_element(tel_field).click().perform()
-
-    time.sleep(1)  # Задержка 1 секунда
+    time.sleep(1)
     tel_field.send_keys(person['phone'])
     tel_field.send_keys(Keys.TAB)
 
-    # Заполнение поля "E-mail"
+    # Fill in the "Email" field
     driver.find_element(By.NAME, "ccemail").send_keys(person['email'])
 
-    # Заполнение поля "Уровень образования" (по умолчанию 11)
+    # Fill in the "Education Level" field (default: 11)
     education_input = driver.find_element(By.ID, "react-select-3-input")
     education_input.send_keys("11")
     education_input.send_keys(Keys.ENTER)
 
-    # Заполнение поля "Гражданство" (по умолчанию тад)
+    # Fill in the "Citizenship" field
     country_input = driver.find_element(By.ID, "react-select-4-input")
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable(country_input))
-    driver.execute_script("arguments[0].scrollIntoView(true);", country_input)  # Прокручиваем страницу
-    country_input.send_keys(person['country_name'])  # Используем новое поле для страны
+    driver.execute_script("arguments[0].scrollIntoView(true);", country_input)
+    country_input.send_keys(person['country_name'])
     country_input.send_keys(Keys.ENTER)
 
-    # Заполнение поля "Программа обучения" (по умолчанию Водитель погрузчика)
+    # Fill in the "Training Program" field
     program_input = driver.find_element(By.ID, "react-select-5-input")
     program_input.send_keys(person['program'])
     program_input.send_keys(Keys.ENTER)
 
-    # Заполнение поля "Старт обучения" (по умолчанию Январь)
+    # Fill in the "Training Start Date" field
     start_training_input = driver.find_element(By.ID, "react-select-6-input")
     start_training_input.send_keys(person['start_training'])
     start_training_input.send_keys(Keys.ENTER)
 
-    # Заполнение поля "Наименование работы" (по умолчанию самолет)
+    # Fill in the "Job Title" field (default: "самолет")
     driver.find_element(By.NAME, "workName").send_keys("самолет")
 
-    # Заполнение поля "Телефон для работы" (по умолчанию 926 717-73-12)
+    # Fill in the "Work Phone" field (default: 926 717-73-12)
     work_tel_field = driver.find_element(By.NAME, "workTel")
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable(work_tel_field))
-    driver.execute_script("arguments[0].scrollIntoView(true);", work_tel_field)  # Прокручиваем страницу
+    driver.execute_script("arguments[0].scrollIntoView(true);", work_tel_field)
     actions.move_to_element(work_tel_field).click().perform()
-
-    time.sleep(1)  # Задержка 1 секунда
+    time.sleep(1)
     work_tel_field.send_keys("926 717-73-12")
 
-    # Заполнение поля "Согласие"
+    # Click the "Agreement" checkbox
     checkbox = driver.find_element(By.ID, "agreement")
-    if not checkbox.is_selected():  # Проверка, если галочка еще не выбрана
+    if not checkbox.is_selected():
         checkbox.click()
 
-    # Ожидаем появления кнопки "Зарегистрироваться"
+    # Click the "Register" button
     try:
         submit_button = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Зарегистрироваться')]"))
         )
-        submit_button.click()  # Кликаем на кнопку отправки формы
-        time.sleep(3)  # Небольшая задержка перед переходом к следующему человеку
+        submit_button.click()
+        time.sleep(3)
     except Exception as e:
-        print(f"Ошибка при клике на кнопку отправки: {e}")
-        pass
+        print(f"Error clicking the submit button: {e}")
 
-    # Ждем появления кнопки "К форме регистрации"
+    # Click the "Back to Registration Form" button
     try:
         registration_button = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, "//div[contains(text(), 'К форме регистрации')]"))
         )
-        registration_button.click()  # Кликаем на кнопку "К форме регистрации"
-        time.sleep(3)  # Небольшая задержка перед переходом к следующему человеку
+        registration_button.click()
+        time.sleep(3)
     except Exception as e:
-        print(f"Ошибка при клике на кнопку 'К форме регистрации': {e}")
-        pass
+        print(f"Error clicking the 'Back to Registration' button: {e}")
 
-    # Ждем немного перед переходом к следующему человеку
-    delay_time = random.randint(60, 180)  # Задержка в секундах от 60 (1 минута) до 180 (3 минуты)
-    print(f"Ожидаем {delay_time} секунд перед отправкой следующей формы...")
-    time.sleep(delay_time)  # Задержка перед переходом к следующему человеку
+    # Delay before processing the next person
+    delay_time = random.randint(60, 180)  # Delay between 1 to 3 minutes
+    print(f"Waiting {delay_time} seconds before submitting the next form...")
+    time.sleep(delay_time)
 
-
-# Ждём, чтобы увидеть результат
+# Wait before closing the browser
 time.sleep(50)
 driver.quit()
-
